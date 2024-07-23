@@ -12,7 +12,26 @@ const startServer = async () => {
   try {
     await dbConnection();
     await App(app);
-
+    /*
+    
+    
+    
+    
+    */
+    const endpoints = expressListEndpoints(app);
+    const csvFilePath = path.join(__dirname, 'endpoints.csv');
+    const csvContent = endpoints
+      .map((route) => {
+        return `${route.path},${route.methods.join(',')}`;
+      })
+      .join('\n');
+    fs.writeFileSync(csvFilePath, 'Path,Methods\n' + csvContent);
+    /*
+ 
+ 
+ 
+ 
+ */
     app.listen(PORT, () => {
       console.log(`Server is listening on port ${PORT}`);
     });
