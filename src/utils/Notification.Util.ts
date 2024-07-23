@@ -1,4 +1,4 @@
-import { Kavenegar_API_KEY, Kavenegar_PHONE_NUMBER } from '../config';
+import { KAVENEGAR_API_KEY, KAVENEGAR_PHONE_NUMBER } from '../config';
 import { Kavenegar } from 'kavenegar';
 
 /* ------------------- Email --------------------- */
@@ -18,11 +18,11 @@ export const GenerateOtp = () => {
 export const onRequestOTP = async (otp: number, toPhoneNumber: string) => {
   try {
     const client = Kavenegar.KavenegarAPI({
-      apikey: Kavenegar_API_KEY,
+      apikey: KAVENEGAR_API_KEY,
     });
 
     const params = {
-      sender: Kavenegar_PHONE_NUMBER,
+      sender: KAVENEGAR_PHONE_NUMBER,
       receptor: toPhoneNumber,
       message: `Your OTP is ${otp}`,
     };
