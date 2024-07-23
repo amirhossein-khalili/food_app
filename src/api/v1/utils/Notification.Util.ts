@@ -1,4 +1,4 @@
-import { KAVENEGAR_API_KEY, KAVENEGAR_PHONE_NUMBER } from '../config';
+import { KAVENEGAR_API_KEY, KAVENEGAR_PHONE_NUMBER } from '../../../config';
 import { Kavenegar } from 'kavenegar';
 
 /* ------------------- Email --------------------- */
