@@ -1,23 +1,9 @@
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import express, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { CreateCustomerInput, UserLoginInput } from '../dto';
-
-import {
-  GenerateOtp,
-  GeneratePassword,
-  GenerateSalt,
-  GenerateSignature,
-  onRequestOTP,
-  ValidatePassword,
-} from '../utils';
-
-import {
-  CheckCustomerExists,
-  CreateCustomer,
-  GetCustomerWithEmail,
-} from '../services/CustomerService';
-import { Customer } from '../models';
+import { GenerateSignature, ValidatePassword } from '../utils';
+import { CheckCustomerExists, CreateCustomer, GetCustomerWithEmail } from '../services';
 
 export const CustomerSignUp = async (req: Request, res: Response, next: NextFunction) => {
   const customerInputs = plainToClass(CreateCustomerInput, req.body);
