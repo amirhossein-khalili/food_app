@@ -1,4 +1,9 @@
-export const MONGO_URI = 'mongodb://localhost:27017/online_food_delivery';
-export const APP_SECRET = '238745623hsdf'
+import dotenv from 'dotenv';
 
-export const PORT = process.env.PORT || 8000;
+dotenv.config();
+
+export const MONGO_URI = process.env.MONGO_URI;
+export const APP_SECRET = process.env.APP_SECRET;
+export const PORT = process.env.PORT;
+export const KAVENEGAR_API_KEY = process.env.KAVENEGAR_API_KEY;
+export const KAVENEGAR_PHONE_NUMBER = process.env.KAVENEGAR_PHONE_NUMBER;
