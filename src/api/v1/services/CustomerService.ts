@@ -1,16 +1,6 @@
-import { Customer, CustomerDoc, DeliveryUser, Food, Vendor } from '../models';
-import express, { Request, Response, NextFunction } from 'express';
-
-import {
-  GenerateOtp,
-  GeneratePassword,
-  GenerateSalt,
-  GenerateSignature,
-  onRequestOTP,
-  ValidatePassword,
-} from '../utils';
-
-import { CreateCustomerInput, UserLoginInput } from '../dto';
+import { Customer, CustomerDoc } from '../models';
+import { GeneratePassword, GenerateSalt } from '../utils';
+import { CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
 
 export const CreateCustomer = async (input: CreateCustomerInput): Promise<CustomerDoc> => {
   const { email, password, phone } = input;
@@ -47,6 +37,27 @@ export const GetCustomerWithEmail = async (input: UserLoginInput): Promise<Custo
   const { email } = input;
 
   const customer = await Customer.findOne({ email: email });
+
+  return customer;
+};
+
+export const GetCustomerWithId = async (id: string): Promise<CustomerDoc> => {
+  const customer = await Customer.findById(id);
+
+  return customer;
+};
+
+export const UpdateCustomer = async (
+  id: string,
+  input: EditCustomerProfileInput
+): Promise<CustomerDoc> => {
+  const { firstName, lastName, address } = input;
+
+  const customer = await Customer.findByIdAndUpdate(id, {
+    firstName: firstName,
+    lastName: lastName,
+    address: address,
+  });
 
   return customer;
 };
