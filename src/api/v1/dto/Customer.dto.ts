@@ -37,7 +37,7 @@ export interface CustomerPayload {
 }
 
 export class CartItem {
-  _id: string;
+  foodId: string;
   unit: number;
 }
 
