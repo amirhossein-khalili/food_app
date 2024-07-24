@@ -68,6 +68,10 @@ export const UpdateVendor = async (id: string, input: EditVendorInput): Promise<
   return vendor;
 };
 
+export const UpdateVendorStatus = async (id: string, status: boolean): Promise<VendorDoc> => {
+  return await Vendor.findByIdAndUpdate(id, { serviceAvailable: status });
+};
+
 export const UpdateVendorStatusAndLocation = async (
   vendor: VendorDoc,
   lat?: number,
