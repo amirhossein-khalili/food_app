@@ -45,11 +45,6 @@ export class CartItem {
   unit: number;
 }
 
-export class OrderInputs {
-  @IsString()
-  txnId: string;
-}
-
 export class CreateDeliveryUserInput {
   @IsEmail()
   email: string;
