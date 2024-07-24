@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import { TCart } from './Transaction';
 
 export interface OrderDoc extends Document {
   // orderId: string;
@@ -30,7 +29,11 @@ const OrderSchema = new Schema(
     totalAmount: { type: Number, require: true },
     paidAmount: { type: Number, require: true },
     orderDate: { type: Date },
-    orderStatus: { type: String },
+    orderStatus: {
+      type: String,
+      enum: ['pending', 'cancelled', 'accepted', 'finished'],
+      default: 'pending',
+    },
     remarks: { type: String },
     deliveryId: { type: String },
     readyTime: { type: Number },
