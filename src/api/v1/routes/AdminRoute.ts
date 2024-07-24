@@ -4,6 +4,9 @@ import {
   CreateVandorController,
   GetVendorController,
   GetVendorsController,
+  GetTransactionsController,
+  GetTransactionByIdController,
+  GetTransactionsCustomerController,
 } from '../controllers/AdminController';
 
 const router = express.Router();
@@ -13,8 +16,9 @@ router.post('/vendor', CreateVandorController);
 router.get('/vendors', GetVendorsController);
 router.get('/vendor/:id', GetVendorController);
 
-router.get('/', (req: Request, res: Response, next: NextFunction) => {
-  res.json({ message: 'Hello from  Admin' });
-});
+/* ------------------- Transaction --------------------- */
+router.get('/transactions', GetTransactionsController);
+router.get('/customer-transactions/:id', GetTransactionsCustomerController);
+router.get('/transaction/:id', GetTransactionByIdController);
 
 export { router as AdminRoute };
