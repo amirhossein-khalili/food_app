@@ -47,7 +47,7 @@ export const CustomerSignUp = async (req: Request, res: Response, next: NextFunc
   const customer = await CreateCustomer(customerInputs);
   if (customer) {
     const signature = await GenerateSignature({
-      _id: customer._id,
+      _id: customer._id as string,
       email: customer.email,
       verified: customer.verified,
     });
@@ -77,7 +77,7 @@ export const CustomerLogin = async (req: Request, res: Response, next: NextFunct
 
     if (validation) {
       const signature = await GenerateSignature({
-        _id: customer._id,
+        _id: customer._id as string,
         email: customer.email,
         verified: customer.verified,
       });
@@ -337,7 +337,7 @@ export const CreateOrderController = async (req: Request, res: Response, next: N
       totalAmount: currentTransaction.orderValue,
       paidAmount: currentTransaction.orderValue,
       orderDate: new Date(),
-      orderStatus: 'Waiting',
+      orderStatus: 'pending',
       remarks: '',
       deliveryId: '',
       readyTime: 45,
@@ -345,7 +345,7 @@ export const CreateOrderController = async (req: Request, res: Response, next: N
 
     /* ----------------------------------------  update transaction and customer  ----------------------------------------- */
     if (currentOrder !== null) {
-      ChangeTransactionStatusAndSetOrderId(txnId, 'CONFIRMED', currentOrder._id);
+      ChangeTransactionStatusAndSetOrderId(txnId, 'CONFIRMED', currentOrder._id as string);
       EmptyCustomerCart(customer._id);
       return res
         .status(200)
