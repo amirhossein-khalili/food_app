@@ -1,19 +1,30 @@
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Request, Response, NextFunction } from 'express';
-import { CartItem, CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
+import {
+  CartItem,
+  CreateCustomerInput,
+  EditCustomerProfileInput,
+  UserLoginInput,
+  CreatePaymentInput,
+  OrderInputs,
+} from '../dto';
 import { GenerateSignature, ValidatePassword } from '../utils';
 import {
-  CalculateCartPrice,
+  CalculateCartItems,
   CheckCustomerExists,
   CreateCustomer,
   EmptyCustomerCart,
   GetCustomerWithEmail,
   GetCustomerWithId,
   UpdateCustomer,
+  ValidateTransaction,
+  CreateOrder,
+  ChangeTransactionStatusAndSetOrderId,
+  CreateTransaction,
+  GetOrdersByCustomerId,
 } from '../services';
 import { Customer, Food } from '../models';
-import { CreateTransaction } from '../services/TransactionService';
 
 /* ------------------------------------------------------------------------------------------------- */
 /*                                       Auth Section                                                */
@@ -262,70 +273,96 @@ export const DeleteCartController = async (req: Request, res: Response, next: Ne
   return res.status(400).json({ message: 'cart is Already Empty!' });
 };
 
-// export const DeleteCartController = async (req: Request, res: Response, next: NextFunction) => {
-//   const customer = req.user;
-
-//   if (customer) {
-//     const profile = await Customer.findById(customer._id).populate('cart.food').exec();
-
-//     if (profile != null) {
-//       profile.cart = [] as any;
-//       const cartResult = await profile.save();
-
-//       return res.status(200).json(cartResult);
-//     }
-//   }
-
-//   return res.status(400).json({ message: 'cart is Already Empty!' });
-// };
-
 /* ------------------------------------------------------------------------------------------------- */
 /*                                       Payment Section                                             */
 /* ------------------------------------------------------------------------------------------------- */
 
-export const CreatePayment = async (req: Request, res: Response, next: NextFunction) => {
+export const CreatePaymentController = async (req: Request, res: Response, next: NextFunction) => {
+  /* ----------------------------------------  Validation Data  ----------------------------------------- */
+  const paymentInputs = plainToClass(CreatePaymentInput, req.body);
+  const validationError = await validate(paymentInputs, { validationError: { target: true } });
+  if (validationError.length > 0) return res.status(400).json(validationError);
+
+  /* ----------------------------------------  get cart price  ----------------------------------------- */
+
   const customer = req.user;
 
-  const { paymentMode } = req.body;
+  const { paymentMode } = paymentInputs;
 
-  const { totalPrice, vendorId } = await CalculateCartPrice(customer._id);
+  const { totalPrice, vendorId, cartItems } = await CalculateCartItems(customer._id);
+
+  /* ---------------------------------------- create transaction ----------------------------------------- */
 
   if (vendorId === null) return res.status(400).json({ message: 'please first add item to cart' });
   else {
     const paymentResponse = 'Payment is cash on Delivery';
-    const transaction = await CreateTransaction(
-      customer._id,
-      '',
-      '',
-      totalPrice,
-      'OPEN',
-      paymentMode,
-      paymentResponse
-    );
+    const transaction = await CreateTransaction({
+      customerId: customer._id,
+      vendorId: vendorId,
+      orderId: '',
+      orderValue: totalPrice,
+      status: 'OPEN',
+      paymentMode: paymentMode,
+      paymentResponse: paymentResponse,
+      items: cartItems,
+    });
     return res.status(200).json(transaction);
   }
-
-  return res.status(500).json('error on payment ');
 };
 
-/*
+/* ------------------------------------------------------------------------------------------------- */
+/*                                       Order Section                                             */
+/* ------------------------------------------------------------------------------------------------- */
 
+export const CreateOrderController = async (req: Request, res: Response, next: NextFunction) => {
+  /* ----------------------------------------  Validation Data  ----------------------------------------- */
+  const orderInputs = plainToClass(OrderInputs, req.body);
+  const validationError = await validate(orderInputs, { validationError: { target: true } });
+  if (validationError.length > 0) return res.status(400).json(validationError);
 
+  const customer = req.user;
 
+  const { txnId } = orderInputs;
 
+  if (customer) {
+    /* ----------------------------------------  Validation transaction  ----------------------------------------- */
+    const { status, currentTransaction } = await ValidateTransaction(txnId);
+    if (!status) return res.status(404).json({ message: 'Error while Creating Order!' });
 
+    /* ----------------------------------------  create order  ----------------------------------------- */
+    const currentOrder = await CreateOrder({
+      customerId: String(customer._id),
+      vendorId: String(currentTransaction.vendorId),
+      items: currentTransaction.items,
+      totalAmount: currentTransaction.orderValue,
+      paidAmount: currentTransaction.orderValue,
+      orderDate: new Date(),
+      orderStatus: 'Waiting',
+      remarks: '',
+      deliveryId: '',
+      readyTime: 45,
+    });
 
+    /* ----------------------------------------  update transaction and customer  ----------------------------------------- */
+    if (currentOrder !== null) {
+      ChangeTransactionStatusAndSetOrderId(txnId, 'CONFIRMED', currentOrder._id);
+      EmptyCustomerCart(customer._id);
+      return res
+        .status(200)
+        .json({ message: 'Your order has been successfully registered.', order: currentOrder });
+    }
 
+    return res.status(400).json({ msg: 'Error while Creating Order' });
+  }
+};
 
+export const GetOrdersController = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
 
+  if (customer) {
+    const orders = await GetOrdersByCustomerId(customer._id);
+    return res.status(200).json(orders);
+  }
 
-
-
-
-
-
-
-
-
-
-*/
+  return res.status(400).json({ msg: 'Orders not found' });
+};
