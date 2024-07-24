@@ -20,7 +20,6 @@ export interface CustomerDoc extends Document {
   lat: number;
   lng: number;
   cart: [any];
-  orders: [OrderDoc];
 }
 
 const CustomerSchema = new Schema(
@@ -43,12 +42,6 @@ const CustomerSchema = new Schema(
         _id: false,
         food: { type: Schema.Types.ObjectId, ref: 'food', require: true },
         unit: { type: Number, require: true },
-      },
-    ],
-    orders: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'order',
       },
     ],
   },
