@@ -15,6 +15,6 @@ export const Authenticate = async (req: Request, res: Response, next: NextFuncti
   if (signature) {
     return next();
   } else {
-    return res.json({ message: 'User Not authorised' });
+    return res.status(403).json({ message: 'User Not authorised' });
   }
 };
