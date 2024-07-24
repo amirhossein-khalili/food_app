@@ -1,4 +1,5 @@
-import { IsEmail, Length } from 'class-validator';
+import { IsEmail, Length, IsString, IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateCustomerInput {
   @IsEmail()
@@ -37,14 +38,16 @@ export interface CustomerPayload {
 }
 
 export class CartItem {
+  @IsString()
   foodId: string;
+
+  @IsNumber()
   unit: number;
 }
 
 export class OrderInputs {
+  @IsString()
   txnId: string;
-  amount: string;
-  items: [CartItem];
 }
 
 export class CreateDeliveryUserInput {
