@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+export interface TCart {
+  food: Schema.Types.ObjectId;
+  unit: number;
+}
+
 export interface TransactionDoc extends Document {
   customer: string;
   vendorId: string;
@@ -9,6 +14,7 @@ export interface TransactionDoc extends Document {
   status: string;
   paymentMode: string;
   paymentResponse: string;
+  items: [any];
 }
 
 const TransactionSchema = new Schema(
@@ -21,6 +27,13 @@ const TransactionSchema = new Schema(
     status: String,
     paymentMode: String,
     paymentResponse: String,
+    items: [
+      {
+        _id: false,
+        food: { type: Schema.Types.ObjectId, ref: 'food', required: true },
+        unit: { type: Number, required: true },
+      },
+    ],
   },
   {
     toJSON: {
