@@ -1,6 +1,6 @@
 import { Vendor, VendorDoc } from '../models';
 import { GeneratePassword, GenerateSalt } from '../utils';
-import { CreateVandorInput } from '../dto';
+import { CreateVandorInput, EditVendorInput } from '../dto';
 
 export const GetVendorWithPhone = async (phone: string): Promise<VendorDoc> => {
   const vendor = await Vendor.findOne({ phone: phone });
@@ -53,4 +53,30 @@ export const FindVendorById = async (id: string): Promise<VendorDoc | null> => {
 
 export const FindVendorByPhoneNumber = async (phoneNumber: string): Promise<VendorDoc | null> => {
   return await Vendor.findOne({ phone: phoneNumber });
+};
+
+export const UpdateVendor = async (id: string, input: EditVendorInput): Promise<VendorDoc> => {
+  const { foodType, name, address, phone } = input;
+
+  const vendor = await Vendor.findByIdAndUpdate(id, {
+    name: name,
+    address: address,
+    phone: phone,
+    foodType: foodType,
+  });
+
+  return vendor;
+};
+
+export const UpdateVendorStatusAndLocation = async (
+  vendor: VendorDoc,
+  lat?: number,
+  lng?: number
+): Promise<VendorDoc> => {
+  vendor.serviceAvailable = !vendor.serviceAvailable;
+  if (lat && lng) {
+    vendor.lat = lat;
+    vendor.lng = lng;
+  }
+  return await vendor.save();
 };
