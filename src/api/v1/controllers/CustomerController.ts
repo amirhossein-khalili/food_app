@@ -1,15 +1,20 @@
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Request, Response, NextFunction } from 'express';
-import { CreateCustomerInput, UserLoginInput } from '../dto';
+import { CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
 import { GenerateSignature, ValidatePassword } from '../utils';
-import { CheckCustomerExists, CreateCustomer, GetCustomerWithEmail } from '../services';
+import {
+  CheckCustomerExists,
+  CreateCustomer,
+  GetCustomerWithEmail,
+  GetCustomerWithId,
+  UpdateCustomer,
+} from '../services';
 
 export const CustomerSignUp = async (req: Request, res: Response, next: NextFunction) => {
-  const customerInputs = plainToClass(CreateCustomerInput, req.body);
-
   /* ----------------------------------------  Validation Data  ----------------------------------------- */
 
+  const customerInputs = plainToClass(CreateCustomerInput, req.body);
   const validationError = await validate(customerInputs, { validationError: { target: false } });
   if (validationError.length > 0) return res.status(400).json(validationError);
 
@@ -67,4 +72,38 @@ export const CustomerLogin = async (req: Request, res: Response, next: NextFunct
   }
 
   return res.json({ msg: 'Please Use Signup first' });
+};
+
+export const GetCustomerProfile = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
+
+  if (customer) {
+    const profile = await GetCustomerWithId(customer._id);
+
+    if (profile) return res.status(201).json(profile);
+  }
+
+  return res.status(500).json({ msg: 'Error while Fetching Profile' });
+};
+
+export const EditCustomerProfile = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
+
+  /* ----------------------------------------  Validation Data  ----------------------------------------- */
+
+  const customerInputs = plainToClass(EditCustomerProfileInput, req.body);
+  const validationError = await validate(customerInputs, { validationError: { target: true } });
+  if (validationError.length > 0) return res.status(400).json(validationError);
+
+  if (customer) {
+    /* ----------------------------------------  Check Profile And Update Customer  ----------------------------------------- */
+    const profile = await GetCustomerWithId(customer._id);
+
+    if (profile) {
+      const result = await UpdateCustomer(customer._id, customerInputs);
+
+      return res.status(200).json(result);
+    }
+  }
+  return res.status(400).json({ msg: 'Error while Updating Profile' });
 };
