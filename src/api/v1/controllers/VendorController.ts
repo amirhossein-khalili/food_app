@@ -168,7 +168,11 @@ export const AddFoodController = async (req: Request, res: Response, next: NextF
 
       const files = req.files as [Express.Multer.File];
 
-      const result = await AddFoodService(user._id, foodInputs, files);
+      const result = await AddFoodService(
+        user._id,
+        foodInputs
+        // files
+      );
 
       return res.json(result);
     }
