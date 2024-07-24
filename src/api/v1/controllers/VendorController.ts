@@ -2,13 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { GenerateSignature, ValidatePassword } from '../utils';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateFoodInput, EditVendorInput, VendorLoginInput } from '../dto';
+import { ChangeOrderStatus, CreateFoodInput, EditVendorInput, VendorLoginInput } from '../dto';
 import {
   FindVendorById,
   FindVendorByPhoneNumber,
   UpdateVendor,
   UpdateVendorStatus,
   UpdateVendorStatusAndLocation,
+  FindCurrentOrders,
+  ChangeStatusOrder,
 } from '../services';
 import { AddFoodService, GetVendorFoods } from '../services/FoodServies';
 
@@ -34,7 +36,7 @@ export const VendorLogin = async (req: Request, res: Response, next: NextFunctio
 
     if (validation) {
       const signature = await GenerateSignature({
-        _id: existingVendor._id,
+        _id: existingVendor._id as string,
         phone: existingVendor.phone,
         name: existingVendor.name,
       });
@@ -122,33 +124,6 @@ export const UpdateVendorServiceController = async (
   return res.json({ message: 'Unable to Update vendor profile ' });
 };
 
-// export const UpdateVendorServiceController = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const user = req.user;
-
-//   const { lat, lng } = req.body;
-
-//   if (user) {
-//     const existingVendor = await FindVendorById(user._id);
-
-//     if (existingVendor !== null) {
-//       existingVendor.serviceAvailable = !existingVendor.serviceAvailable;
-
-//       if (lat && lng) {
-//         existingVendor.lat = lat;
-//         existingVendor.lng = lng;
-//       }
-//       const saveResult = await UpdateVendorStatusAndLocation(existingVendor, lat, lng);
-
-//       return res.json(saveResult);
-//     }
-//   }
-//   return res.json({ message: 'Unable to Update vendor profile ' });
-// };
-
 export const AddFoodController = async (req: Request, res: Response, next: NextFunction) => {
   /* ----------------------------------------  Validation Data  ----------------------------------------- */
 
@@ -191,4 +166,36 @@ export const GetFoodsController = async (req: Request, res: Response, next: Next
     }
   }
   return res.json({ message: 'Foods not found!' });
+};
+
+export const GetCurrentOrdersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req.user;
+
+  if (user) {
+    const orders = await FindCurrentOrders(user._id);
+
+    if (orders != null) {
+      return res.status(200).json(orders);
+    }
+  }
+
+  return res.json({ message: 'Orders Not found' });
+};
+
+export const ProcessOrderController = async (req: Request, res: Response, next: NextFunction) => {
+  /* ----------------------------------------  Validation Data  ----------------------------------------- */
+  const vendorInputs = plainToClass(ChangeOrderStatus, req.body);
+  const validationError = await validate(vendorInputs, { validationError: { target: true } });
+  if (validationError.length > 0) return res.status(400).json(validationError);
+
+  /* ----------------------------------------  update order  ----------------------------------------- */
+  const order = ChangeStatusOrder(vendorInputs);
+
+  if (order) return res.json({ message: 'order status has been changed', order: order });
+
+  return res.json({ message: 'Unable to process order' });
 };
