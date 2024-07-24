@@ -1,6 +1,6 @@
 import { CreateFoodInput } from '../dto';
 import { Food, FoodDoc, Vendor, VendorDoc } from '../models';
-import { FindVendorById } from './VendorService';
+import { ObjectID } from 'mongodb';
 
 export const GetVendorFoods = async (id: string): Promise<FoodDoc[]> => {
   const foods = await Food.find({ vendorId: id });
@@ -10,13 +10,13 @@ export const GetVendorFoods = async (id: string): Promise<FoodDoc[]> => {
 
 export const AddFoodService = async (
   userId: string,
-  foodInputs: CreateFoodInput,
-  files: Express.Multer.File[]
+  foodInputs: CreateFoodInput
+  // files: Express.Multer.File[]
 ): Promise<VendorDoc | null> => {
   const vendor = await Vendor.findById(userId);
 
   const { name, description, category, foodType, readyTime, price } = foodInputs;
-  const images = files.map((file) => file.filename);
+  // const images = files.map((file) => file.filename);
 
   const food = await Food.create({
     vendorId: vendor._id,
@@ -27,11 +27,15 @@ export const AddFoodService = async (
     rating: 0,
     readyTime: readyTime,
     foodType: foodType,
-    images: images,
+    // images: images,
   });
 
   vendor.foods.push(food);
   const result = await vendor.save();
 
   return result;
+};
+
+export const GetFoodById = async (id: string): Promise<FoodDoc> => {
+  return await Food.findById(id);
 };
