@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { OrderDoc } from './Order';
 
-interface CustomerDoc extends Document {
+export interface CustomerDoc extends Document {
   email: string;
   password: string;
   salt: string;
