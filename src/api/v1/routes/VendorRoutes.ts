@@ -7,6 +7,8 @@ import {
   UpdateVendorProfile,
   UpdateVendorServiceController,
   VendorLogin,
+  GetCurrentOrdersController,
+  ProcessOrderController,
 } from '../controllers';
 import { Authenticate } from '../middleware';
 import multer from 'multer';
@@ -24,19 +26,26 @@ const imageStorage = multer.diskStorage({
 
 const images = multer({ storage: imageStorage }).array('images', 10);
 
+/* --------------------------- Login -------------------------- */
 router.post('/login', VendorLogin);
 
+/* --------------------------- Authentication -------------------------- */
 router.use(Authenticate);
+
+/* --------------------------- profile -------------------------- */
 router.get('/profile', GetVendorProfile);
 router.patch('/profile', UpdateVendorProfile);
 router.patch('/coverimage', images, UpdateVendorCoverImage);
+
+/* --------------------------- change service -------------------------- */
 router.patch('/service', UpdateVendorServiceController);
 
+/* --------------------------- menu -------------------------- */
 router.post('/food', images, AddFoodController);
 router.get('/food', GetFoodsController);
 
-router.get('/', (req: Request, res: Response, next: NextFunction) => {
-  res.json({ message: 'Hello from Vandor' });
-});
+/* --------------------------- orders -------------------------- */
+router.get('/orders', GetCurrentOrdersController);
+router.put('/order/process', ProcessOrderController);
 
 export { router as VendorRoute };
