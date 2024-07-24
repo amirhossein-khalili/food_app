@@ -1,9 +1,11 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import { TCart } from './Transaction';
 
 export interface OrderDoc extends Document {
-  orderId: string;
+  // orderId: string;
+  customerId: string;
   vendorId: string;
-  items: [any];
+  items: any[];
   totalAmount: number;
   paidAmount: number;
   orderDate: Date;
@@ -15,10 +17,12 @@ export interface OrderDoc extends Document {
 
 const OrderSchema = new Schema(
   {
-    orderId: { type: String, require: true },
+    // orderId: { type: String, require: true },
     vendorId: { type: String, require: true },
+    customerId: { type: String, require: true },
     items: [
       {
+        _id: false,
         food: { type: Schema.Types.ObjectId, ref: 'food', require: true },
         unit: { type: Number, require: true },
       },
