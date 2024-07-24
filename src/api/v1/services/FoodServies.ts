@@ -1,6 +1,5 @@
 import { CreateFoodInput } from '../dto';
 import { Food, FoodDoc, Vendor, VendorDoc } from '../models';
-import { ObjectID } from 'mongodb';
 
 export const GetVendorFoods = async (id: string): Promise<FoodDoc[]> => {
   const foods = await Food.find({ vendorId: id });
