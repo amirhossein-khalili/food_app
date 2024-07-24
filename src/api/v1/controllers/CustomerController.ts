@@ -1,15 +1,23 @@
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Request, Response, NextFunction } from 'express';
-import { CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
+import { CartItem, CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
 import { GenerateSignature, ValidatePassword } from '../utils';
 import {
+  CalculateCartPrice,
   CheckCustomerExists,
   CreateCustomer,
+  EmptyCustomerCart,
   GetCustomerWithEmail,
   GetCustomerWithId,
   UpdateCustomer,
 } from '../services';
+import { Customer, Food } from '../models';
+import { CreateTransaction } from '../services/TransactionService';
+
+/* ------------------------------------------------------------------------------------------------- */
+/*                                       Auth Section                                                */
+/* ------------------------------------------------------------------------------------------------- */
 
 export const CustomerSignUp = async (req: Request, res: Response, next: NextFunction) => {
   /* ----------------------------------------  Validation Data  ----------------------------------------- */
@@ -107,3 +115,217 @@ export const EditCustomerProfile = async (req: Request, res: Response, next: Nex
   }
   return res.status(400).json({ msg: 'Error while Updating Profile' });
 };
+
+/* ------------------------------------------------------------------------------------------------- */
+/*                                       Cart Section                                                */
+/* ------------------------------------------------------------------------------------------------- */
+
+// export const AddToCartController = async (req: Request, res: Response, next: NextFunction) => {
+//   const customer = req.user;
+
+//   if (customer) {
+//     const profile = await GetCustomerWithId(customer._id);
+//     let cartItems = Array();
+
+//     const { foodId, unit } = <CartItem>req.body;
+
+//     const food = await GetFoodById(foodId);
+
+//     if (food && profile != null) {
+//       cartItems = profile.cart;
+
+//       if (cartItems.length > 0) {
+//         // check and update
+//         let existFoodItems = cartItems.filter((item) => item.food._id.toString() === foodId);
+
+//         if (existFoodItems.length > 0) {
+//           const index = cartItems.indexOf(existFoodItems[0]);
+
+//           if (unit > 0) {
+//             cartItems[index] = { food, unit };
+//           } else {
+//             cartItems.splice(index, 1);
+//           }
+//         } else {
+//           cartItems.push({ food, unit });
+//         }
+//       } else {
+//         // add new Item
+//         cartItems.push({ food, unit });
+//       }
+
+//       if (cartItems) {
+//         profile.cart = cartItems as any;
+//         const cartResult = await UpdateCustomer(customer._id, profile);
+//         return res.status(200).json(cartResult.cart);
+//       }
+//     }
+//   }
+
+//   return res.status(404).json({ msg: 'Unable to add to cart!' });
+// };
+
+// export const GetCartController = async (req: Request, res: Response, next: NextFunction) => {
+//   const customer = req.user;
+
+//   console.log(customer);
+
+//   if (customer) {
+//     const profile = await GetCustomerWithId(customer._id);
+//     if (profile) return res.status(200).json(profile.cart);
+//   }
+
+//   return res.status(400).json({ message: 'Cart is Empty!' });
+// };
+
+// export const DeleteCartController = async (req: Request, res: Response, next: NextFunction) => {
+//   const customer = req.user;
+
+//   if (customer) {
+//     const cartResult = EmptyCustomerCart(customer._id);
+
+//     return res.status(200).json(cartResult);
+//   }
+
+//   return res.status(400).json({ message: 'cart is Already Empty!' });
+// };
+
+export const AddToCartController = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
+
+  if (customer) {
+    const profile = await Customer.findById(customer._id);
+    let cartItems = Array();
+
+    const { foodId, unit } = <CartItem>req.body;
+
+    const food = await Food.findById(foodId);
+
+    if (food) {
+      if (profile != null) {
+        cartItems = profile.cart;
+
+        if (cartItems.length > 0) {
+          // check and update
+          let existFoodItems = cartItems.filter((item) => item.food._id.toString() === foodId);
+          if (existFoodItems.length > 0) {
+            const index = cartItems.indexOf(existFoodItems[0]);
+
+            if (unit > 0) {
+              cartItems[index] = { food, unit };
+            } else {
+              cartItems.splice(index, 1);
+            }
+          } else {
+            cartItems.push({ food, unit });
+          }
+        } else {
+          // add new Item
+          cartItems.push({ food, unit });
+        }
+
+        if (cartItems) {
+          profile.cart = cartItems as any;
+          const cartResult = await profile.save();
+          return res.status(200).json(cartResult.cart);
+        }
+      }
+    }
+  }
+
+  return res.status(404).json({ msg: 'Unable to add to cart!' });
+};
+
+export const GetCartController = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
+
+  if (customer) {
+    const profile = await GetCustomerWithId(customer._id);
+
+    if (profile) {
+      return res.status(200).json(profile.cart);
+    }
+  }
+
+  return res.status(400).json({ message: 'Cart is Empty!' });
+};
+
+export const DeleteCartController = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
+
+  if (customer) {
+    const cartResult = EmptyCustomerCart(customer._id);
+
+    return res.status(200).json(cartResult);
+  }
+
+  return res.status(400).json({ message: 'cart is Already Empty!' });
+};
+
+// export const DeleteCartController = async (req: Request, res: Response, next: NextFunction) => {
+//   const customer = req.user;
+
+//   if (customer) {
+//     const profile = await Customer.findById(customer._id).populate('cart.food').exec();
+
+//     if (profile != null) {
+//       profile.cart = [] as any;
+//       const cartResult = await profile.save();
+
+//       return res.status(200).json(cartResult);
+//     }
+//   }
+
+//   return res.status(400).json({ message: 'cart is Already Empty!' });
+// };
+
+/* ------------------------------------------------------------------------------------------------- */
+/*                                       Payment Section                                             */
+/* ------------------------------------------------------------------------------------------------- */
+
+export const CreatePayment = async (req: Request, res: Response, next: NextFunction) => {
+  const customer = req.user;
+
+  const { paymentMode } = req.body;
+
+  const { totalPrice, vendorId } = await CalculateCartPrice(customer._id);
+
+  if (vendorId === null) return res.status(400).json({ message: 'please first add item to cart' });
+  else {
+    const paymentResponse = 'Payment is cash on Delivery';
+    const transaction = await CreateTransaction(
+      customer._id,
+      '',
+      '',
+      totalPrice,
+      'OPEN',
+      paymentMode,
+      paymentResponse
+    );
+    return res.status(200).json(transaction);
+  }
+
+  return res.status(500).json('error on payment ');
+};
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
