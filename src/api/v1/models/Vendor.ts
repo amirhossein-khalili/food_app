@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
+
 export interface VendorDoc extends mongoose.Document {
   name: string;
   ownerName: string;
