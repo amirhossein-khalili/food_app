@@ -1,6 +1,11 @@
 import { Customer, CustomerDoc, Order } from '../models';
 import { GeneratePassword, GenerateSalt } from '../utils';
-import { CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
+import {
+  CreateCustomerInput,
+  EditCustomerProfileInput,
+  UserLoginInput,
+  ChangeOrderStatus,
+} from '../dto';
 
 export const CreateCustomer = async (input: CreateCustomerInput): Promise<CustomerDoc> => {
   const { email, password, phone } = input;
@@ -92,5 +97,15 @@ export const CalculateCartItems = async (id: string) => {
 };
 
 export const GetOrdersByCustomerId = async (id: string) => {
-  return await Order.findById(id).populate('orders');
+  return await Order.find({ customerId: id });
+};
+
+export const ChangeStatusOrder = async (input: ChangeOrderStatus) => {
+  const { orderId, orderStatus, remarks, time } = input;
+  const order = await Order.findByIdAndUpdate(orderId, {
+    orderStatus: orderStatus,
+    remarks: remarks,
+    time: time,
+  });
+  return order;
 };
