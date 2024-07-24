@@ -7,6 +7,7 @@ import {
   FindVendorById,
   FindVendorByPhoneNumber,
   UpdateVendor,
+  UpdateVendorStatus,
   UpdateVendorStatusAndLocation,
 } from '../services';
 import { AddFoodService, GetVendorFoods } from '../services/FoodServies';
@@ -112,18 +113,41 @@ export const UpdateVendorServiceController = async (
     const existingVendor = await FindVendorById(user._id);
 
     if (existingVendor !== null) {
-      existingVendor.serviceAvailable = !existingVendor.serviceAvailable;
-      if (lat && lng) {
-        existingVendor.lat = lat;
-        existingVendor.lng = lng;
-      }
-      const saveResult = await UpdateVendorStatusAndLocation(existingVendor, lat, lng);
+      const status = !existingVendor.serviceAvailable;
+      const saveResult = await UpdateVendorStatus(user._id, status);
 
       return res.json(saveResult);
     }
   }
   return res.json({ message: 'Unable to Update vendor profile ' });
 };
+
+// export const UpdateVendorServiceController = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   const user = req.user;
+
+//   const { lat, lng } = req.body;
+
+//   if (user) {
+//     const existingVendor = await FindVendorById(user._id);
+
+//     if (existingVendor !== null) {
+//       existingVendor.serviceAvailable = !existingVendor.serviceAvailable;
+
+//       if (lat && lng) {
+//         existingVendor.lat = lat;
+//         existingVendor.lng = lng;
+//       }
+//       const saveResult = await UpdateVendorStatusAndLocation(existingVendor, lat, lng);
+
+//       return res.json(saveResult);
+//     }
+//   }
+//   return res.json({ message: 'Unable to Update vendor profile ' });
+// };
 
 export const AddFoodController = async (req: Request, res: Response, next: NextFunction) => {
   /* ----------------------------------------  Validation Data  ----------------------------------------- */
