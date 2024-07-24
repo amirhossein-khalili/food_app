@@ -1,4 +1,4 @@
-import { Customer, CustomerDoc } from '../models';
+import { Customer, CustomerDoc, Order } from '../models';
 import { GeneratePassword, GenerateSalt } from '../utils';
 import { CreateCustomerInput, EditCustomerProfileInput, UserLoginInput } from '../dto';
 
@@ -71,7 +71,7 @@ export const EmptyCustomerCart = async (id: string): Promise<CustomerDoc> => {
   return cartResult;
 };
 
-export const CalculateCartPrice = async (id: string) => {
+export const CalculateCartItems = async (id: string) => {
   const customer = await Customer.findById(id).populate('cart.food').exec();
 
   const cartItems = customer.cart;
@@ -88,5 +88,9 @@ export const CalculateCartPrice = async (id: string) => {
     }
   }
 
-  return { totalPrice, vendorId };
+  return { totalPrice, vendorId, cartItems };
+};
+
+export const GetOrdersByCustomerId = async (id: string) => {
+  return await Order.findById(id).populate('orders');
 };
