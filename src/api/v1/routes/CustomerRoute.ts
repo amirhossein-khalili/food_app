@@ -18,25 +18,25 @@ const router = express.Router();
 /* ------------------- Signup / Customer  --------------------- */
 router.post('/signup', CustomerSignUp);
 
-/* ------------------- Login --------------------- */
+/* --------------------------- Login -------------------------- */
 router.post('/login', CustomerLogin);
 
-/* ------------------- Authentication --------------------- */
+/* ----------------------- Authentication --------------------- */
 router.use(Authenticate);
 
-/* ------------------- Profile --------------------- */
+/* ------------------------- Profile -------------------------- */
 router.get('/profile', GetCustomerProfile);
 router.patch('/profile', EditCustomerProfile);
 
-/* ------------------- Cart --------------------- */
+/* --------------------------- Cart --------------------------- */
 router.post('/cart', AddToCartController);
 router.get('/cart', GetCartController);
 router.delete('/cart', DeleteCartController);
 
+/* --------------------------- peyment  ----------------------  */
 router.post('/create-payment', CreatePaymentController);
 
-/* ------------------- Order --------------------- */
-
+/* --------------------------- Order -------------------------- */
 router.post('/create-order', CreateOrderController);
 router.get('/orders', GetOrdersController);
 
