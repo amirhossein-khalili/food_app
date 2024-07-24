@@ -1,13 +1,12 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-
-interface VendorDoc extends Document {
+import paginate from 'mongoose-paginate-v2';
+export interface VendorDoc extends mongoose.Document {
   name: string;
   ownerName: string;
   foodType: [string];
   pincode: string;
   address: string;
   phone: string;
-  email: string;
   password: string;
   salt: string;
   serviceAvailable: boolean;
@@ -26,7 +25,6 @@ const VendorSchema = new Schema(
     pincode: { type: String, required: true },
     address: { type: String },
     phone: { type: String, required: true },
-    email: { type: String, required: true },
     password: { type: String, required: true },
     salt: { type: String, required: true },
     serviceAvailable: { type: Boolean },
@@ -55,6 +53,11 @@ const VendorSchema = new Schema(
   }
 );
 
-const Vendor = mongoose.model<VendorDoc>('vendor', VendorSchema);
+VendorSchema.plugin(paginate);
+const Vendor = mongoose.model<VendorDoc, mongoose.PaginateModel<VendorDoc>>(
+  'Vendors',
+  VendorSchema,
+  'vendors'
+);
 
 export { Vendor };
