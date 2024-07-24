@@ -1,9 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-
-export interface TCart {
-  food: Schema.Types.ObjectId;
-  unit: number;
-}
+import paginate from 'mongoose-paginate-v2';
 
 export interface TransactionDoc extends Document {
   customer: string;
@@ -45,6 +41,12 @@ const TransactionSchema = new Schema(
   }
 );
 
-const Transaction = mongoose.model<TransactionDoc>('transaction', TransactionSchema);
+TransactionSchema.plugin(paginate);
+
+const Transaction = mongoose.model<TransactionDoc, mongoose.PaginateModel<TransactionDoc>>(
+  'Transactions',
+  TransactionSchema,
+  'transactions'
+);
 
 export { Transaction };
