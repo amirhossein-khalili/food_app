@@ -41,3 +41,16 @@ export const ChangeTransactionStatusAndSetOrderId = async (
 ) => {
   return await Transaction.findByIdAndUpdate(txnId, { status: status, orderId: orderId });
 };
+
+export const FindAllTransactions = async () => {
+  const transactions = await Transaction.find();
+  return transactions;
+};
+
+export const FindTransactionById = async (id: string) => {
+  return await Transaction.findById(id);
+};
+
+export const FindAllTransactionsByCustomerId = async (id: string) => {
+  return await Transaction.find({ customerId: id });
+};
