@@ -6,7 +6,10 @@ import {
   CreateVendor,
   GetVendors,
   FindVendorByPhoneNumber,
+  FindAllTransactions,
   FindVendorById,
+  FindTransactionById,
+  FindAllTransactionsByCustomerId,
 } from '../services';
 import { CreateVandorInput } from '../dto';
 
@@ -57,13 +60,44 @@ export const GetVendorController = async (req: Request, res: Response, next: Nex
   else return res.status(404).json({ message: 'Vendor not found' });
 };
 
-// export const GetVendorController = async (req: Request, res: Response, next: NextFunction) => {
-//   const { id, phoneNumber } = req.query;
+export const GetTransactionsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const transactions = await FindAllTransactions;
 
-//   let vendor = null;
-//   if (phoneNumber) vendor = await FindVendorByPhoneNumber(phoneNumber as string);
-//   else if (id) vendor = await FindVendorById(id as string);
+  console.log(transactions);
+  if (transactions) return res.status(200).json(transactions);
 
-//   if (vendor !== null) return res.json(vendor);
-//   else return res.status(404).json({ message: 'Vendor not found' });
-// };
+  return res.json({ message: 'Transactions data not available' });
+};
+
+export const GetTransactionByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = req.params.id;
+
+  const transaction = await FindTransactionById(id);
+
+  if (transaction) return res.status(200).json(transaction);
+
+  return res.json({ message: 'Transaction data not available' });
+};
+
+export const GetTransactionsCustomerController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = req.params.id;
+
+  const transaction = await FindAllTransactionsByCustomerId(id);
+
+  console.log(transaction);
+  if (transaction) return res.status(200).json(transaction);
+
+  return res.json({ message: 'Transaction data not available' });
+};
