@@ -1,4 +1,4 @@
-import { Vendor, VendorDoc } from '../models';
+import { Order, Vendor, VendorDoc } from '../models';
 import { GeneratePassword, GenerateSalt } from '../utils';
 import { CreateVandorInput, EditVendorInput } from '../dto';
 
@@ -83,4 +83,12 @@ export const UpdateVendorStatusAndLocation = async (
     vendor.lng = lng;
   }
   return await vendor.save();
+};
+
+export const FindCurrentOrders = async (id: string) => {
+  return await Order.find({ vendorId: id, status: 'pending' });
+};
+
+export const UpdateCurrentOrders = async (id: string) => {
+  return await Order.find({ vendorId: id, status: 'pending' });
 };
