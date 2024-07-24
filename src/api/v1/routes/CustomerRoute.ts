@@ -7,7 +7,9 @@ import {
   AddToCartController,
   GetCartController,
   DeleteCartController,
-  CreatePayment,
+  CreatePaymentController,
+  CreateOrderController,
+  GetOrdersController,
 } from '../controllers';
 import { Authenticate } from '../middleware';
 
@@ -31,7 +33,11 @@ router.post('/cart', AddToCartController);
 router.get('/cart', GetCartController);
 router.delete('/cart', DeleteCartController);
 
-/* ------------------- Payment --------------------- */
-router.post('/create-payment', CreatePayment);
+router.post('/create-payment', CreatePaymentController);
+
+/* ------------------- Order --------------------- */
+
+router.post('/create-order', CreateOrderController);
+router.get('/orders', GetOrdersController);
 
 export { router as CustomerRoute };
