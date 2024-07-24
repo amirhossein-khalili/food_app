@@ -61,3 +61,32 @@ export const UpdateCustomer = async (
 
   return customer;
 };
+
+export const EmptyCustomerCart = async (id: string): Promise<CustomerDoc> => {
+  const profile = await Customer.findById(id).populate('cart.food').exec();
+
+  profile.cart = [] as any;
+  const cartResult = await profile.save();
+
+  return cartResult;
+};
+
+export const CalculateCartPrice = async (id: string) => {
+  const customer = await Customer.findById(id).populate('cart.food').exec();
+
+  const cartItems = customer.cart;
+
+  let totalPrice = 0;
+  let vendorId = null;
+
+  if (cartItems.length > 0) {
+    vendorId = cartItems[0].food.vendorId;
+    for (const cartItem of cartItems) {
+      const foodPrice = parseFloat(cartItem.food.price);
+      const quantity = cartItem.unit;
+      totalPrice += foodPrice * quantity;
+    }
+  }
+
+  return { totalPrice, vendorId };
+};
