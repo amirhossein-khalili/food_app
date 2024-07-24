@@ -1,6 +1,11 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { OrderDoc } from './Order';
 
+export interface ICart {
+  food: Schema.Types.ObjectId;
+  unit: number;
+}
+
 export interface CustomerDoc extends Document {
   email: string;
   password: string;
@@ -35,6 +40,7 @@ const CustomerSchema = new Schema(
     lng: { type: Number },
     cart: [
       {
+        _id: false,
         food: { type: Schema.Types.ObjectId, ref: 'food', require: true },
         unit: { type: Number, require: true },
       },
